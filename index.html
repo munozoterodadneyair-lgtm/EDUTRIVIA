@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>EXPLORADORES DEL SABER — Inicio</title>
+
+  <!-- Tipografía amigable -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#f0f9ff;
+      --card:#ffffff;
+      --muted:#6b7280;
+      --accent1:#0ea5e9; /* celeste */
+      --accent2:#facc15; /* amarillo */
+      --accent3:#10b981; /* verde */
+      --accent4:#7c3aed; /* morado */
+    }
+    *{box-sizing:border-box}
+    body{font-family:'Poppins',system-ui,-apple-system,Segoe UI,Roboto,Arial; margin:0; background:var(--bg); color:#0b1220; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;}
+    .wrap{max-width:1100px;margin:28px auto;padding:20px}
+
+    /* ===== Loader (pantalla de carga) ===== */
+    #loader{
+      position:fixed; inset:0; display:flex; align-items:center; justify-content:center; flex-direction:column;
+      background:linear-gradient(135deg,var(--accent1),#00d1ff 40%, #a7f3d0 100%);
+      z-index:9999; transition:opacity .6s ease, visibility .6s ease;
+    }
+    #loader.hidden{opacity:0; visibility:hidden;}
+    .loader-card{width:320px; background:rgba(255,255,255,0.12); padding:22px; border-radius:18px; text-align:center; box-shadow:0 10px 30px rgba(2,6,23,0.12)}
+    #mapa-nic{
+      width:240px;height:360px;margin:6px auto;background:transparent;
+      filter:drop-shadow(0 8px 24px rgba(2,6,23,0.18));
+      transform-origin:center;
+      animation:mapPulse 2.6s ease-in-out infinite;
+    }
+    #loader h1{color:white;font-size:22px;margin-top:10px;text-shadow:0 6px 18px rgba(0,0,0,0.18)}
+    #loader p{color:#efffff;margin-top:6px;opacity:.95}
+
+    @keyframes mapPulse{
+      0%{transform:translateY(0) scale(0.98)}
+      50%{transform:translateY(-6px) scale(1.02)}
+      100%{transform:translateY(0) scale(0.98)}
+    }
+
+    /* ===== App principal ===== */
+    header.app-header{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;padding:20px 0}
+    .brand{display:flex;gap:12px;align-items:center}
+    .brand .logo{
+      width:62px;height:62px;border-radius:12px;background:linear-gradient(135deg,var(--accent4),var(--accent1));display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:20px;box-shadow:0 8px 18px rgba(124,58,237,0.16)
+    }
+    .brand h1{font-size:20px;margin:0;color:#042b4a}
+    .brand p{font-size:13px;color:var(--muted);margin-top:4px}
+
+    .hero{
+      background: linear-gradient(135deg, rgba(255,255,255,0.8), rgba(255,255,255,0.6));
+      border-radius:14px;padding:18px;display:flex;gap:18px;align-items:center;
+      box-shadow:0 8px 30px rgba(2,6,23,0.06)
+    }
+    .hero .left{flex:1;text-align:left}
+    .hero h2{font-size:22px;margin:0 0 8px 0;color:#05263a}
+    .hero p{margin:0;color:#234;opacity:.9}
+    .hero .cta{margin-top:12px}
+
+    .btn{
+      display:inline-block;background:linear-gradient(90deg,var(--accent1),var(--accent3)); color:white;padding:10px 16px;border-radius:10px;border:0;font-weight:600;cursor:pointer;text-decoration:none;
+      box-shadow:0 8px 18px rgba(2,6,23,0.08)
+    }
+    .btn.secondary{background:linear-gradient(90deg,#ffd54f,#f59e0b); color:#072034}
+
+    /* ===== Lecciones (presentación tipo diapositivas) ===== */
+    .lecciones{
+      margin-top:18px; display:flex; gap:18px; align-items:flex-start; flex-direction:column;
+      min-height:360px;
+    }
+    .slide{
+      max-width:900px;margin:0 auto;background:var(--card);padding:20px;border-radius:14px;box-shadow:0 10px 28px rgba(2,6,23,0.06);
+      display:flex;gap:18px;align-items:center;
+    }
+    .slide .illustration{width:40%;min-width:260px}
+    .slide .content{flex:1;text-align:left}
+    .slide h3{font-size:20px;margin:0 0 8px 0;color:#07385a}
+    .slide p{color:var(--muted);line-height:1.5}
+    .controls-slide{display:flex;justify-content:space-between;gap:12px;margin-top:12px;align-items:center}
+    .dots{display:flex;gap:8px;align-items:center}
+    .dots button{width:10px;height:10px;border-radius:50%;background:#e6eef9;border:0}
+    .dots button.active{background:var(--accent3);box-shadow:0 4px 12px rgba(16,185,129,0.18)}
+
+    /* responsive */
+    @media (max-width:900px){
+      .slide{flex-direction:column}
+      .slide .illustration{width:100%;min-width:0}
+      #mapa-nic{width:180px;height:270px}
+    }
+  </style>
+</head>
+<body>
+  <!-- Pantalla de carga con mapa de Nicaragua (usa SVG público alojado en Wikimedia) -->
+  <div id="loader">
+    <div class="loader-card">
+      <div id="mapa-nic" aria-hidden="true" title="Mapa de Nicaragua">
+  <img src="https://i.postimg.cc/g0zr7JVT/1000000481-removebg-preview.png"
+       alt="Mapa de Nicaragua" 
+       style="width:100%;height:100%;object-fit:contain;border-radius:12px;box-shadow:0 8px 24px rgba(2,6,23,0.18);padding:6px;animation:mapBounce 2s ease-in-out infinite;" />
+</div>
+      </div>
+      <h1>Exploradores del Saber</h1>
+      <p>Preparando la aventura educativa…</p>
+    </div>
+  </div>
+
+  <!-- Contenedor principal -->
+  <div class="wrap" id="app" style="display:none">
+    <header class="app-header">
+      <div class="brand">
+        <div class="logo">ES</div>
+        <div>
+          <h1>EXPLORADORES DEL SABER</h1>
+          <p>Trivia educativa con IA — Enseña Historia, Cultura y Ciencia</p>
+        </div>
+      </div>
+
+      <div style="text-align:right">
+        <div style="margin-bottom:8px;color:var(--muted);font-size:13px">Modo demo • recursos educativos</div>
+        <a class="btn" id="irTriviaTop">Ir a la Trivia</a>
+      </div>
+    </header>
+
+    <!-- Hero / introducción -->
+    <section class="hero" aria-labelledby="heroTitle">
+      <div class="left">
+        <h2 id="heroTitle">Aprende y compite en equipos — ¡Explora y descubre!</h2>
+        <p>Antes de jugar, revisa estas mini-lecciones rápidas que preparan a tu equipo para la trivia.</p>
+        <div class="cta">
+          <a class="btn secondary" id="comenzarLecciones">Comenzar lecciones</a>
+        </div>
+      </div>
+      <div style="width:240px">
+        <svg width="240" height="160" viewBox="0 0 240 160" fill="none" xmlns="http://www.w3.org/2000/svg" style="border-radius:12px;overflow:visible;box-shadow: 0 10px 30px rgba(2,6,23,0.06)">
+          <rect x="0" y="0" width="240" height="160" rx="12" fill="white"/>
+          <text x="18" y="36" font-family="Poppins, sans-serif" font-size="18" font-weight="600" fill="#05263a">Explora</text>
+          <text x="18" y="64" font-family="Poppins, sans-serif" font-size="13" fill="#334155">Historia • Cultura • Ciencia</text>
+          <circle cx="190" cy="50" r="28" fill="#a78bfa"/>
+          <text x="174" y="57" font-size="20" fill="white" font-weight="700">IA</text>
+        </svg>
+      </div>
+    </section>
+
+    <!-- Sección de lecciones (diapositivas) -->
+    <section class="lecciones" id="leccionesSection" aria-live="polite" style="display:none">
+      <!-- Slide template (se sustituye por JS) -->
+      <div class="slide" id="slideCurrent">
+        <div class="illustration" id="slideIllustration" aria-hidden="true">
+          <!-- ilustración inline por tema (JS la generará) -->
+        </div>
+        <div class="content">
+          <h3 id="slideTitle">Título de la lección</h3>
+          <p id="slideText">Texto de la mini-lección. Explicación breve y clara.</p>
+
+          <div class="controls-slide">
+            <div class="dots" id="slideDots"></div>
+            <div>
+              <button class="btn secondary" id="prevBtn" style="margin-right:8px">Anterior</button>
+              <button class="btn" id="nextBtn">Siguiente lección</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Area final con botón para ir a la trivia -->
+      <div style="max-width:900px;margin:18px auto;display:flex;justify-content:center;gap:12px">
+        <a id="irTrivia" class="btn" style="display:none">Jugar Trivia con IA</a>
+        <a id="irTriviaNewTab" class="btn secondary" style="display:none" target="_blank" rel="noopener">Abrir Trivia en nueva pestaña</a>
+      </div>
+    </section>
+
+    <footer style="margin-top:28px;color:var(--muted);text-align:center;font-size:13px">
+      © Exploradores del Saber — Material educativo • Demo
+    </footer>
+  </div>
+
+  <script>
+    // ===== Datos de las mini-lecciones (basadas en preguntas actuales) =====
+    const lecciones = [
+      {
+        id: 'historia',
+        title: 'Historia: Independencia de Nicaragua',
+        text: 'Nicaragua proclamó su independencia de España el 15 de septiembre de 1821, en el contexto de la independencia de Centroamérica. Aprender sobre este proceso ayuda a entender la identidad y los cambios políticos de la región.',
+        svg: `<svg viewBox="0 0 300 220" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto">
+                <rect rx="12" width="300" height="220" fill="#fff8e1"/>
+                <g transform="translate(12,18)">
+                  <rect width="90" height="90" rx="12" fill="#fff3bf"/>
+                  <text x="8" y="58" font-size="14" font-family="Poppins" fill="#283046" font-weight="700">1821</text>
+                </g>
+                <g transform="translate(120,18)">
+                  <path d="M0 80 L60 0 L120 80 Z" fill="#ffd54f"/>
+                  <text x="6" y="110" font-size="13" font-family="Poppins" fill="#0b1720">Independencia</text>
+                </g>
+              </svg>`
+      },
+      {
+        id: 'ciencia-espacio',
+        title: 'Ciencia: Primer humano en el espacio',
+        text: 'Yuri Gagarin fue el primer ser humano en orbitar la Tierra el 12 de abril de 1961. Este hito marcó el comienzo de la era espacial y demuestra el avance de la tecnología y la ciencia.',
+        svg: `<svg viewBox="0 0 300 220" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto">
+                <rect rx="12" width="300" height="220" fill="#e6f7ff"/>
+                <g transform="translate(18,22)">
+                  <circle cx="48" cy="48" r="36" fill="#0ea5e9"/>
+                  <text x="30" y="56" font-size="12" font-family="Poppins" fill="white" font-weight="700">Gagarin</text>
+                </g>
+                <g transform="translate(120,22)">
+                  <rect x="0" y="0" width="150" height="120" rx="10" fill="#dbeafe"/>
+                  <text x="8" y="42" font-size="13" font-family="Poppins" fill="#072034">12 abril 1961</text>
+                </g>
+              </svg>`
+      },
+      {
+        id: 'planetas',
+        title: 'Cultura/Ciencia: El planeta más grande',
+        text: 'Júpiter es el planeta más grande del sistema solar. Su gran masa y campo gravitacional influyen en la estructura del sistema y tienen impacto en la formación planetaria.',
+        svg: `<svg viewBox="0 0 300 220" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto">
+                <rect rx="12" width="300" height="220" fill="#fff7ed"/>
+                <g transform="translate(18,22)">
+                  <circle cx="56" cy="56" r="46" fill="#f59e0b"/>
+                  <text x="28" y="66" font-size="14" font-family="Poppins" fill="#fff" font-weight="700">Júpiter</text>
+                </g>
+                <g transform="translate(140,26)">
+                  <text x="0" y="36" font-size="13" font-family="Poppins" fill="#2b3440">Planeta gigante</text>
+                </g>
+              </svg>`
+      }
+    ];
+
+    // ===== Elementos DOM =====
+    const loader = document.getElementById('loader');
+    const app = document.getElementById('app');
+
+    const comenzarLeccionesBtn = document.getElementById('comenzarLecciones');
+    const leccionesSection = document.getElementById('leccionesSection');
+    const slideIllustration = document.getElementById('slideIllustration');
+    const slideTitle = document.getElementById('slideTitle');
+    const slideText = document.getElementById('slideText');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const slideDots = document.getElementById('slideDots');
+    const irTrivia = document.getElementById('irTrivia');
+    const irTriviaNewTab = document.getElementById('irTriviaNewTab');
+    const irTriviaTop = document.getElementById('irTriviaTop');
+
+    let current = 0;
+
+    // Muestra el slide actual
+    function renderSlide(index){
+      const s = lecciones[index];
+      slideIllustration.innerHTML = s.svg;
+      slideTitle.textContent = s.title;
+      slideText.textContent = s.text;
+
+      // dots
+      slideDots.innerHTML = '';
+      lecciones.forEach((_,i)=>{
+        const b = document.createElement('button');
+        b.className = i===index? 'active' : '';
+        if(i===index) b.classList.add('active');
+        b.addEventListener('click',()=>{ current=i; renderSlide(current); });
+        slideDots.appendChild(b);
+      });
+
+      prevBtn.style.display = index===0? 'none' : 'inline-block';
+      nextBtn.textContent = index === lecciones.length-1 ? 'Finalizar lecciones' : 'Siguiente lección';
+    }
+
+    // Navegación
+    prevBtn.addEventListener('click', ()=>{
+      if(current>0){ current--; renderSlide(current); }
+    });
+    nextBtn.addEventListener('click', ()=>{
+      if(current < lecciones.length-1){ current++; renderSlide(current); }
+      else { // finalizó las lecciones
+        irTrivia.style.display = 'inline-block';
+        irTriviaNewTab.style.display = 'inline-block';
+        // desplaza a la parte de botones
+        irTrivia.scrollIntoView({behavior:'smooth', block:'center'});
+      }
+    });
+
+    // Botones para ir a la trivia
+    irTrivia.addEventListener('click', ()=> {
+      // Redirige en misma pestaña a juego.html (el archivo de la sección 2)
+      window.location.href = 'juego.html';
+    });
+    irTriviaNewTab.addEventListener('click', (e)=> {
+      // abre en nueva pestaña
+      window.open('juego.html', '_blank', 'noopener');
+    });
+    irTriviaTop.addEventListener('click', ()=> {
+      // acceso directo desde header
+      window.location.href = 'juego.html';
+    });
+
+    // Iniciar lecciones (muestra la sección)
+    comenzarLeccionesBtn.addEventListener('click', (e)=>{
+      leccionesSection.style.display = 'block';
+      // render primer slide
+      current = 0;
+      renderSlide(current);
+      // desplazar hacia abajo
+      leccionesSection.scrollIntoView({behavior:'smooth', block:'start'});
+    });
+
+    // Simulación de carga: muestra loader 3.5s y luego app
+    window.addEventListener('load', ()=>{
+      setTimeout(()=>{
+        loader.classList.add('hidden');
+        setTimeout(()=>{ loader.style.display='none'; },700);
+        app.style.display = 'block';
+      }, 3500);
+    });
+
+    // Accesibilidad: permitir navegar slides con flechas
+    document.addEventListener('keydown', (ev)=>{
+      if(leccionesSection.style.display === 'block'){
+        if(ev.key === 'ArrowRight') { if(current < lecciones.length-1) { current++; renderSlide(current); } }
+        if(ev.key === 'ArrowLeft') { if(current > 0) { current--; renderSlide(current); } }
+      }
+    });
+  </script>
+</body>
+</html>

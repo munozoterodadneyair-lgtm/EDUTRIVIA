@@ -1,0 +1,162 @@
+<!DOCTYPE html><html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EXPLORADORES DEL SABER - Trivia con IA</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;font-family:'Poppins',sans-serif}
+    body{background:#f0f8ff;color:#222;overflow:hidden;}/* ===== Pantalla de carga con mapa de Nicaragua ===== */
+#loader{
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  background:linear-gradient(135deg,#0077ff,#00d4ff,#00ffcc);
+  display:flex;align-items:center;justify-content:center;
+  flex-direction:column;z-index:1000;
+  animation:fadeOut 1s ease 4s forwards;
+}
+#mapa{
+  width:300px;height:480px;
+  background:url('https://upload.wikimedia.org/wikipedia/commons/5/56/Nicaragua_location_map.svg') no-repeat center/contain;
+  filter:drop-shadow(0 0 12px rgba(0,0,0,0.3));
+  animation:zoomIn 3s ease infinite alternate;
+}
+#loader h2{color:white;margin-top:20px;font-size:24px;text-shadow:2px 2px 6px rgba(0,0,0,0.3)}
+@keyframes zoomIn{from{transform:scale(0.9);}to{transform:scale(1.1);}}
+@keyframes fadeOut{to{opacity:0;visibility:hidden;}}
+
+/* ===== Contenido principal ===== */
+#app{
+  display:none;
+  background:linear-gradient(135deg,#fef9c3,#a5f3fc,#fcd34d);
+  width:100%;height:100vh;overflow-y:auto;
+  padding:20px;text-align:center;
+}
+header h1{font-size:32px;color:#004aad;margin-bottom:10px;}
+header p{color:#333;font-size:16px;margin-bottom:20px;}
+
+.btn{
+  background:#00bcd4;color:white;border:none;border-radius:8px;
+  padding:10px 20px;font-size:16px;cursor:pointer;
+  transition:background .3s ease;
+}
+.btn:hover{background:#0288d1;}
+
+.pregunta-container{
+  margin:20px auto;max-width:700px;background:white;padding:20px;border-radius:16px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.1);
+}
+.pregunta{font-weight:600;font-size:18px;color:#222;margin-bottom:15px;}
+.opcion{
+  background:#f0f8ff;border:2px solid transparent;border-radius:8px;padding:10px;margin:8px 0;
+  cursor:pointer;transition:all .3s;
+}
+.opcion:hover{background:#cce5ff;}
+.correcta{background:#a7f3d0 !important;}
+.incorrecta{background:#fecaca !important;}
+
+footer{margin-top:20px;font-size:14px;color:#555;}
+
+  </style>
+</head>
+<body>
+  <!-- Pantalla de carga -->
+  <div id="loader">
+    <div id="mapa"></div>
+    <h2>Cargando... Exploradores del Saber 🌎</h2>
+  </div>  <!-- Aplicación principal -->  <div id="app">
+    <header>
+      <h1>🌟 EXPLORADORES DEL SABER 🌟</h1>
+      <p>Una trivia educativa con IA — Aprende Historia, Cultura y Ciencia compitiendo en equipo.</p>
+      <button class="btn" id="iniciarBtn">Comenzar aventura</button>
+    </header><div id="juego" style="display:none">
+  <div class="pregunta-container">
+    <div class="pregunta" id="preguntaTexto">Aquí aparecerá una pregunta generada por IA...</div>
+    <div id="opciones"></div>
+  </div>
+  <button class="btn" id="siguienteBtn">Siguiente pregunta</button>
+  <footer>
+    Desarrollado para fomentar el conocimiento — Adaptativo con IA
+  </footer>
+</div>
+
+  </div>  <script>
+    // Simula la IA que genera preguntas y explica respuestas
+    const preguntas = [
+      {
+        pregunta: '¿Quién fue el primer ser humano en viajar al espacio?',
+        opciones: ['Neil Armstrong', 'Yuri Gagarin', 'Buzz Aldrin', 'Alan Shepard'],
+        correcta: 1,
+        explicacion: 'Yuri Gagarin, cosmonauta soviético, fue el primer humano en orbitar la Tierra en 1961.'
+      },
+      {
+        pregunta: '¿En qué año se declaró la independencia de Nicaragua?',
+        opciones: ['1821', '1856', '1893', '1905'],
+        correcta: 0,
+        explicacion: 'Nicaragua proclamó su independencia de España el 15 de septiembre de 1821, junto a otros países de Centroamérica.'
+      },
+      {
+        pregunta: '¿Cuál es el planeta más grande del sistema solar?',
+        opciones: ['Tierra', 'Saturno', 'Júpiter', 'Urano'],
+        correcta: 2,
+        explicacion: 'Júpiter es el planeta más grande, con un diámetro de más de 140,000 km.'
+      }
+    ];
+
+    let indice = 0;
+    const loader = document.getElementById('loader');
+    const app = document.getElementById('app');
+    const iniciarBtn = document.getElementById('iniciarBtn');
+    const juego = document.getElementById('juego');
+    const preguntaTexto = document.getElementById('preguntaTexto');
+    const opcionesDiv = document.getElementById('opciones');
+    const siguienteBtn = document.getElementById('siguienteBtn');
+
+    window.addEventListener('load',()=>{
+      setTimeout(()=>{
+        loader.style.display='none';
+        app.style.display='block';
+      },4500);
+    });
+
+    iniciarBtn.addEventListener('click',()=>{
+      iniciarBtn.style.display='none';
+      juego.style.display='block';
+      mostrarPregunta();
+    });
+
+    function mostrarPregunta(){
+      if(indice>=preguntas.length){
+        preguntaTexto.textContent='🎉 ¡Has completado todas las rondas!';
+        opcionesDiv.innerHTML='';
+        siguienteBtn.style.display='none';
+        return;
+      }
+      const p=preguntas[indice];
+      preguntaTexto.textContent=p.pregunta;
+      opcionesDiv.innerHTML='';
+      p.opciones.forEach((op,i)=>{
+        const div=document.createElement('div');
+        div.className='opcion';
+        div.textContent=op;
+        div.onclick=()=>verificarRespuesta(i,p.correcta,p.explicacion,div);
+        opcionesDiv.appendChild(div);
+      });
+    }
+
+    function verificarRespuesta(sel,correcta,exp,div){
+      const opciones=document.querySelectorAll('.opcion');
+      opciones.forEach(o=>o.style.pointerEvents='none');
+      if(sel===correcta){
+        div.classList.add('correcta');
+        alert('✅ ¡Correcto!\n'+exp);
+      }else{
+        div.classList.add('incorrecta');
+        alert('❌ Incorrecto. '+exp);
+      }
+    }
+
+    siguienteBtn.addEventListener('click',()=>{
+      indice++;
+      mostrarPregunta();
+    });
+  </script></body>
+</html>

@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>EXPLORADORES DEL SABER — Inicio</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#f0f9ff;
+      --card:#ffffff;
+      --muted:#6b7280;
+      --accent1:#0ea5e9;
+      --accent2:#facc15;
+      --accent3:#10b981;
+      --accent4:#7c3aed;
+    }
+    *{box-sizing:border-box}
+    body{font-family:'Poppins',system-ui,-apple-system,Segoe UI,Roboto,Arial;margin:0;background:var(--bg);color:#0b1220;}
+    .wrap{max-width:1100px;margin:28px auto;padding:20px}
+    .btn{display:inline-block;background:linear-gradient(90deg,var(--accent1),var(--accent3));color:white;padding:10px 16px;border-radius:10px;border:0;font-weight:600;cursor:pointer;text-decoration:none;box-shadow:0 8px 18px rgba(2,6,23,0.08)}
+    .btn.secondary{background:linear-gradient(90deg,#ffd54f,#f59e0b);color:#072034}
+    .card{background:var(--card);padding:20px;border-radius:14px;box-shadow:0 10px 28px rgba(2,6,23,0.06);margin-top:20px;}
+    .muted{color:var(--muted);}
+    input,textarea{width:100%;padding:10px;border-radius:8px;border:1px solid #ccc;font-family:'Poppins';margin-bottom:12px;}
+    .opcion-btn{display:block;margin:6px 0;padding:10px;border-radius:8px;border:1px solid #ccc;background:#f9fafb;cursor:pointer;}
+    .opcion-btn.correcta{background:#dcfce7;border-color:#16a34a;color:#065f46;}
+    .opcion-btn.incorrecta{background:#fee2e2;border-color:#dc2626;color:#7f1d1d;}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="app-header">
+      <div class="brand">
+        <div class="logo" style="width:62px;height:62px;border-radius:12px;background:linear-gradient(135deg,var(--accent4),var(--accent1));display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:20px;">ES</div>
+        <div>
+          <h1>EXPLORADORES DEL SABER</h1>
+          <p class="muted">Trivia educativa con IA — Enseña Historia, Cultura y Ciencia</p>
+        </div>
+      </div>
+    </header>
+
+    <!-- Sección existente de introducción (puedes mantener tus lecciones aquí) -->
+
+    <!-- 🔹 NUEVA SECCIÓN: Explora con IA -->
+    <section id="exploraIA" class="card">
+      <h2>🤖 Explora con IA</h2>
+      <p class="muted">Hazle una pregunta a la inteligencia artificial. Ella te responderá y además te creará una trivia basada en su respuesta.</p>
+      
+      <textarea id="preguntaInput" rows="3" placeholder="Escribe tu pregunta aquí..."></textarea>
+      <button id="btnPreguntar" class="btn">Preguntar a la IA</button>
+      
+      <div id="respuestaIA" style="margin-top:18px;display:none;">
+        <h3>💡 Respuesta:</h3>
+        <p id="textoRespuesta"></p>
+      </div>
+
+      <div id="triviaIA" style="margin-top:18px;display:none;">
+        <h3>🎯 Trivia generada:</h3>
+        <div id="preguntaTrivia"></div>
+        <div id="opcionesTrivia"></div>
+        <p id="resultadoTrivia" style="font-weight:600;margin-top:12px;"></p>
+      </div>
+    </section>
+
+    <footer style="margin-top:28px;color:var(--muted);text-align:center;font-size:13px">
+      © Exploradores del Saber — Material educativo • Demo
+    </footer>
+  </div>
+
+  <script>
+    const btnPreguntar = document.getElementById('btnPreguntar');
+    const preguntaInput = document.getElementById('preguntaInput');
+    const textoRespuesta = document.getElementById('textoRespuesta');
+    const respuestaIA = document.getElementById('respuestaIA');
+    const triviaIA = document.getElementById('triviaIA');
+    const preguntaTrivia = document.getElementById('preguntaTrivia');
+    const opcionesTrivia = document.getElementById('opcionesTrivia');
+    const resultadoTrivia = document.getElementById('resultadoTrivia');
+
+    btnPreguntar.addEventListener('click', async () => {
+      const pregunta = preguntaInput.value.trim();
+      if (!pregunta) {
+        alert('Por favor, escribe una pregunta.');
+        return;
+      }
+
+      btnPreguntar.disabled = true;
+      btnPreguntar.textContent = "Generando respuesta...";
+      textoRespuesta.textContent = "";
+      respuestaIA.style.display = "none";
+      triviaIA.style.display = "none";
+      resultadoTrivia.textContent = "";
+
+      try {
+        const res = await fetch("http://localhost:3000/api/preguntar", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ pregunta })
+        });
+
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
+
+        // Mostrar respuesta
+        respuestaIA.style.display = "block";
+        textoRespuesta.textContent = data.respuesta;
+
+        // Mostrar trivia
+        triviaIA.style.display = "block";
+        const t = data.trivia;
+        preguntaTrivia.textContent = t.pregunta;
+        opcionesTrivia.innerHTML = "";
+        resultadoTrivia.textContent = "";
+
+        t.opciones.forEach(op => {
+          const btn = document.createElement("button");
+          btn.textContent = op;
+          btn.className = "opcion-btn";
+          btn.addEventListener("click", () => {
+            if (op === t.correcta) {
+              btn.classList.add("correcta");
+              resultadoTrivia.textContent = "✅ ¡Correcto!";
+            } else {
+              btn.classList.add("incorrecta");
+              resultadoTrivia.textContent = `❌ Incorrecto. La respuesta correcta era: ${t.correcta}`;
+            }
+            // Deshabilitar todos los botones
+            document.querySelectorAll(".opcion-btn").forEach(b => b.disabled = true);
+          });
+          opcionesTrivia.appendChild(btn);
+        });
+      } catch (err) {
+        alert("Hubo un error al conectar con la IA: " + err.message);
+      } finally {
+        btnPreguntar.disabled = false;
+        btnPreguntar.textContent = "Preguntar a la IA";
+      }
+    });
+  </script>
+</body>
+</html>

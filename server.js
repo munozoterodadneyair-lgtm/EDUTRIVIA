@@ -1,59 +1,80 @@
-import 'dotenv/config';  // Si usas módulos ES (import/export)
 import express from "express";
-import OpenAI from "openai";
+import fetch from "node-fetch";
 import dotenv from "dotenv";
 import cors from "cors";
 
 dotenv.config();
-
 const app = express();
-app.use(express.json());
 app.use(cors());
+app.use(express.json());
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
 
 app.post("/api/preguntar", async (req, res) => {
   const { pregunta } = req.body;
+  if (!pregunta) return res.status(400).json({ error: "Falta la pregunta" });
 
   try {
-    // 1️⃣ Respuesta general
-    const respuesta = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        { role: "system", content: "Eres un asistente educativo." },
-        { role: "user", content: pregunta },
-      ],
+ 
+    const respuestaRaw = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages: [
+          { role: "system", content: "Eres un profesor experto que da respuestas educativas y claras." },
+          { role: "user", content: pregunta },
+        ],
+      }),
     });
 
-    const textoRespuesta = respuesta.choices[0].message.content;
+    const respuestaData = await respuestaRaw.json();
+    const respuestaTexto = respuestaData.choices[0].message.content.trim();
 
-    // 2️⃣ Genera trivia
-    const trivia = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "system",
-          content:
-            "Genera una trivia en formato JSON con los campos 'pregunta', 'opciones' (array de 4), y 'correcta'.",
-        },
-        { role: "user", content: textoRespuesta },
-      ],
+ 
+    const triviaRaw = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        response_format: { type: "json_object" },
+        messages: [
+          { role: "system", content: "Genera una trivia en formato JSON." },
+          {
+            role: "user",
+            content: `Crea una trivia de una sola pregunta basada en el siguiente texto educativo:
+            
+            "${respuestaTexto}"
+            
+            Devuélvela en formato JSON con esta estructura exacta:
+            {
+              "pregunta": "texto",
+              "opciones": ["A","B","C","D"],
+              "correcta": "texto de la opción correcta"
+            }`
+          }
+        ],
+      }),
     });
 
-    const triviaJSON = JSON.parse(trivia.choices[0].message.content);
+    const triviaData = await triviaRaw.json();
+    const triviaJson = JSON.parse(triviaData.choices[0].message.content);
 
     res.json({
-      respuesta: textoRespuesta,
-      trivia: triviaJSON,
+      respuesta: respuestaTexto,
+      trivia: triviaJson,
     });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Error al obtener respuesta del modelo." });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error generando respuesta o trivia" });
   }
 });
 
-app.listen(3000, () => {
-  console.log("🚀 Servidor API corriendo en http://localhost:3000");
-});
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Servidor activo en http://localhost:${PORT}`));
